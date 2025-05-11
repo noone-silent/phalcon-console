@@ -11,6 +11,10 @@ docker compose exec phalcon bash
 ```
 
 ```bash
+composer install
+```
+
+```bash
 bin/console
 ```
 
