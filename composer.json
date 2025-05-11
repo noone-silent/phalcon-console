@@ -1,0 +1,23 @@
+{
+  "name": "noone-silent/phalcon-console",
+  "description": "New style console application",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "noone-silent",
+      "email": "lominum@protonmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Phalcon\\": "src/Phalcon/"
+    }
+  },
+  "scripts": {
+    "phpstan": "vendor/bin/phpstan analyse"
+  },
+  "require-dev": {
+    "phpstan/phpstan": "^2.1"
+  }
+}

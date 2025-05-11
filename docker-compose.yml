@@ -1,0 +1,7 @@
+services:
+  phalcon8.4:
+    build:
+      dockerfile: Dockerfile
+      context: .
+    volumes:
+      - ./:/app

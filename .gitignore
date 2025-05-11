@@ -1,0 +1,7 @@
+.idea/
+.local/
+.composer/
+.cache/
+vendor/
+.env
+docker-compose.override.yml
