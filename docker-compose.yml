@@ -1,5 +1,5 @@
 services:
-  phalcon8.4:
+  phalcon:
     build:
       dockerfile: Dockerfile
       context: .
