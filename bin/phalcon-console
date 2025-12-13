@@ -8,7 +8,7 @@ use Phalcon\Console\Location;
 // We expect to be in vendor/bin
 $baseDir = dirname(__DIR__);
 if (str_ends_with($baseDir, 'phalcon-console') === true) {
-    $baseDir = dirname($baseDir);
+    $baseDir = dirname($baseDir, 3);
 }
 
 require_once $baseDir . '/vendor/autoload.php';
