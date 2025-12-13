@@ -1,11 +1,19 @@
 {
   "name": "noone-silent/phalcon-console",
-  "description": "New style console application",
+  "description": "Phalcon console framework for easier console command management and overview.",
   "minimum-stability": "stable",
-  "license": "proprietary",
+  "keywords": [
+    "phalcon",
+    "console",
+    "cli",
+    "command",
+    "tasks"
+  ],
+  "license": "GPL-3.0-or-later",
+  "homepage": "https://github.com/noone-silent/phalcon-console",
   "authors": [
     {
-      "name": "noone-silent",
+      "name": "n[oO]ne",
       "email": "lominum@protonmail.com"
     }
   ],
@@ -14,10 +22,36 @@
       "Phalcon\\": "src/Phalcon/"
     }
   },
+  "autoload-dev": {
+    "psr-4": {
+      "Phalcon\\": "src/Phalcon/",
+      "Unit\\": "tests/Unit/"
+    }
+  },
+  "bin": [
+    "bin/phalcon-console"
+  ],
+  "config": {
+    "sort-packages": true
+  },
+  "extra": {
+    "phalcon-console": {
+      "locations": [
+        "tests/"
+      ]
+    }
+  },
   "scripts": {
-    "phpstan": "vendor/bin/phpstan analyse"
+    "stan": "vendor/bin/phpstan analyse",
+    "unit": "vendor/bin/phpunit"
   },
   "require-dev": {
-    "phpstan/phpstan": "^2.1"
+    "phpstan/phpstan": "^2.1",
+    "phpunit/phpunit": "^11.5"
+  },
+  "require": {
+    "php": ">= 8.0",
+    "ext-phalcon": "^5.0",
+    "php-parallel-lint/php-console-color": "^1.0"
   }
 }

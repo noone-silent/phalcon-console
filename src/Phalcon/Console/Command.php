@@ -7,6 +7,9 @@ namespace Phalcon\Console;
 use ReflectionMethod;
 use ReflectionParameter;
 
+use function count;
+use function strtolower;
+
 final class Command
 {
     /** @var array<string, array<Param>> */
@@ -20,12 +23,14 @@ final class Command
      * @param string                     $class
      * @param ReflectionMethod           $method
      * @param array<ReflectionParameter> $params
+     * @param string|null                $description
      */
     public function __construct(
         private readonly string $command,
         private readonly string $class,
         private readonly ReflectionMethod $method,
-        array $params = []
+        array $params = [],
+        private readonly ?string $description = null
     ) {
         foreach ($params as $param) {
             if ($param->isOptional() === true) {
@@ -49,6 +54,11 @@ final class Command
         return $this->command;
     }
 
+    public function getDescription(): ?string
+    {
+        return $this->description;
+    }
+
     public function getClass(): string
     {
         return $this->class;
@@ -57,6 +67,11 @@ final class Command
     public function getMethod(): ReflectionMethod
     {
         return $this->method;
+    }
+
+    public function hasParams(): bool
+    {
+        return count($this->params['optional']) !== 0 || count($this->params['required']) !== 0;
     }
 
     /**
@@ -73,5 +88,24 @@ final class Command
     public function getOptionalParams(): array
     {
         return $this->params['optional'];
+    }
+
+    public function getParamByName(string $name): ?Param
+    {
+        $checkName = strtolower($name);
+
+        foreach ($this->params['required'] as $param) {
+            if ($param->getName(true) === $checkName) {
+                return $param;
+            }
+        }
+
+        foreach ($this->params['optional'] as $param) {
+            if ($param->getName(true) === $checkName) {
+                return $param;
+            }
+        }
+
+        return null;
     }
 }

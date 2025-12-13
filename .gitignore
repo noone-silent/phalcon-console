@@ -4,4 +4,5 @@
 .cache/
 vendor/
 .env
+.bash_history
 docker-compose.override.yml

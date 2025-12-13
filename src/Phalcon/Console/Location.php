@@ -4,22 +4,16 @@ declare(strict_types=1);
 
 namespace Phalcon\Console;
 
+use CachingIterator;
 use FilesystemIterator;
+use Phalcon\Console\Iterators\PhpFileFilterIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
-use function trim;
-
-final class Location
+final readonly class Location
 {
-    public function __construct(private string $namespace, private readonly string $location)
+    public function __construct(private string $location)
     {
-        $this->namespace = trim($this->namespace, '\\');
-    }
-
-    public function getNamespace(): string
-    {
-        return $this->namespace;
     }
 
     public function getLocation(): string
@@ -28,16 +22,20 @@ final class Location
     }
 
     /**
-     * @return RecursiveIteratorIterator<RecursiveDirectoryIterator>
+     * @return CachingIterator<mixed, mixed, RecursiveIteratorIterator<PhpFileFilterIterator>>
      */
-    public function getList(): RecursiveIteratorIterator
+    public function getList(): CachingIterator
     {
-        return new RecursiveIteratorIterator(
-            new RecursiveDirectoryIterator(
-                $this->getLocation(),
-                FilesystemIterator::SKIP_DOTS
-            ),
-            RecursiveIteratorIterator::CHILD_FIRST
+        return new CachingIterator(
+            new RecursiveIteratorIterator(
+                new PhpFileFilterIterator(
+                    new RecursiveDirectoryIterator(
+                        $this->getLocation(),
+                        FilesystemIterator::SKIP_DOTS
+                    ),
+                ),
+                RecursiveIteratorIterator::CHILD_FIRST
+            )
         );
     }
 }

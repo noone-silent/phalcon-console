@@ -3,7 +3,3 @@ parameters:
     level: max
     paths:
         - src
-    ignoreErrors:
-        # unfixable because dynamic
-        - message: '#Parameter \#1 \$objectOrClass of class ReflectionClass constructor expects class-string\<T of object\>\|T of object, string given.#'
-          path: src/Phalcon/Console/Console.php
