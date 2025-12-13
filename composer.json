@@ -36,6 +36,9 @@
   },
   "extra": {
     "phalcon-console": {
+      "options": {
+        "bootstrap": "tests/test-bootstrap.php"
+      },
       "locations": [
         "tests/"
       ]
@@ -46,6 +49,7 @@
     "unit": "vendor/bin/phpunit"
   },
   "require-dev": {
+    "phalcon/ide-stubs": "^5.9",
     "phpstan/phpstan": "^2.1",
     "phpunit/phpunit": "^11.5"
   },

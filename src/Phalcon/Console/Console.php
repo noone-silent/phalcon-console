@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Phalcon\Console;
 
 use DateTime;
+use Phalcon\Cli\Console as PhalconConsole;
 use Phalcon\Console\ColorInterface as CI;
+use Phalcon\Di\DiInterface;
 use ReflectionClass;
 use ReflectionException;
+use RuntimeException;
 use SplFileInfo;
 use Throwable;
 
@@ -42,17 +45,23 @@ class Console
     /** @var array<int, Location> */
     private array $locations;
 
+    private ?string $bootstrapFile;
+
     private ?ColorInterface $color = null;
 
+    private int $loadedClasses = 0;
+
     /**
-     * @param array<int, Location>                                          $locations
-     * @param array{suffixes?: array<int, string>, defaultLocations?: bool} $options
+     * @param array<int, Location>                                     $locations
+     * @param array{suffixes?: array<int, string>, bootstrap?: string} $options
      */
     public function __construct(array $locations, array $options = [])
     {
         if (isset($options['suffixes']) === true && is_array($options['suffixes']) === true) {
             self::$suffixes = [...self::$suffixes, ...$options['suffixes']];
         }
+
+        $this->bootstrapFile = $options['bootstrap'] ?? null;
 
         $this->locations = $locations;
     }
@@ -97,6 +106,7 @@ class Console
             if ($cmd->getCommand() !== $requested) {
                 continue;
             }
+
             $invokeArgs = [];
             foreach ($args as $arg) {
                 $parts                = explode('=', $arg);
@@ -105,7 +115,23 @@ class Console
                 $invokeArgs[$argName] = $this->transformValues($cmd->getParamByName($argName), $argValue);
             }
             $class = $cmd->getClass();
-            $cmd->getMethod()->invokeArgs(new $class(), $invokeArgs);
+
+            /** @var DiInterface|null $di */
+            $di = null;
+            if ($this->bootstrapFile !== null) {
+                include $this->bootstrapFile;
+            }
+            if (isset($di) === false) {
+                throw new RuntimeException('Phalcon Console needs $di defined');
+            }
+
+            $arguments           = [];
+            $arguments['task']   = $cmd->getClass();
+            $arguments['action'] = str_replace(self::$suffixes, '', $cmd->getMethod()->getName());
+            $arguments['params'] = $invokeArgs;
+
+            $cli = new PhalconConsole($di);
+            $cli->handle($arguments);
         }
     }
 
@@ -117,9 +143,15 @@ class Console
      */
     private function addCommand(SplFileInfo $file): array
     {
-        require $file->getPathname();
-        $classes   = get_declared_classes();
-        $loadClass = end($classes);
+        require_once $file->getPathname();
+        $classes    = get_declared_classes();
+        $newClasses = count($classes);
+        if ($newClasses === $this->loadedClasses) {
+            return [];
+        }
+
+        $this->loadedClasses = $newClasses;
+        $loadClass           = end($classes);
 
         if ($loadClass === false) {
             return [];
@@ -128,7 +160,11 @@ class Console
         $ref       = new ReflectionClass($loadClass);
         $namespace = $ref->getNamespaceName();
 
-        $clean   = substr(rtrim($file->getFilename(), DIRECTORY_SEPARATOR), 0, -4);
+        $clean   = str_replace(
+            self::$suffixes,
+            '',
+            substr(rtrim($file->getFilename(), DIRECTORY_SEPARATOR), 0, -4)
+        );
         $class   = '\\' . $namespace . '\\' . $clean;
         $command = strtolower(str_replace(self::$suffixes, '', $clean));
 

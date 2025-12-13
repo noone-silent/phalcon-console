@@ -5,12 +5,13 @@ declare(strict_types=1);
 namespace Phalcon\Console\Commands;
 
 use DateTimeInterface;
+use Phalcon\Cli\Task;
 use Phalcon\Console\PhalconConsoleCommand;
 
-class Console
+class ConsoleTask extends Task
 {
     #[PhalconConsoleCommand]
-    public function build(bool $debug = false, bool $cache = true): void
+    public function buildAction(bool $debug = false, bool $cache = true): void
     {
         echo "Debug enabled: ", $debug === true ? 'true' : 'false', PHP_EOL;
         echo "Cache enabled: ", $cache === true ? 'true' : 'false', PHP_EOL;
@@ -23,7 +24,7 @@ class Console
     }
 
     #[PhalconConsoleCommand]
-    public function clear(): void
+    public function clearAction(): void
     {
         echo "I cleared the cache!", PHP_EOL;
     }

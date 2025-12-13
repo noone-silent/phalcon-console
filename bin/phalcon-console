@@ -32,7 +32,12 @@ foreach ($settings['locations'] ?? [] as $location) {
     $locations[] = new Location($baseDir . DIRECTORY_SEPARATOR . $location);
 }
 
-$console = new Console($locations, $settings['options'] ?? []);
+$options = $settings['options'] ?? [];
+if (isset($options['bootstrap']) === true) {
+    $options['bootstrap'] = $baseDir . DIRECTORY_SEPARATOR . $options['bootstrap'];
+}
+
+$console = new Console($locations, $options);
 if (($settings['colored'] ?? true) === true) {
     $console->setColor(new Color());
 }
