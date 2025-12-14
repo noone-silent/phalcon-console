@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Phalcon\Console;
 
+use ReflectionClass;
 use ReflectionMethod;
 use ReflectionParameter;
 
-use function count;
 use function strtolower;
 
 final class Command
@@ -18,21 +18,22 @@ final class Command
         'optional' => [],
     ];
 
+    private int $paramCount = 0;
+
     /**
      * @param string                     $command
-     * @param string                     $class
      * @param ReflectionMethod           $method
      * @param array<ReflectionParameter> $params
      * @param string|null                $description
      */
     public function __construct(
         private readonly string $command,
-        private readonly string $class,
         private readonly ReflectionMethod $method,
         array $params = [],
         private readonly ?string $description = null
     ) {
         foreach ($params as $param) {
+            $this->paramCount++;
             if ($param->isOptional() === true) {
                 $this->params['optional'][] = new Param(
                     $param->getName(),
@@ -59,9 +60,14 @@ final class Command
         return $this->description;
     }
 
-    public function getClass(): string
+    public function getClass(): ReflectionClass
     {
-        return $this->class;
+        return $this->getMethod()->getDeclaringClass();
+    }
+
+    public function getClassName(): string
+    {
+        return $this->method->getDeclaringClass()->getShortName();
     }
 
     public function getMethod(): ReflectionMethod
@@ -69,9 +75,14 @@ final class Command
         return $this->method;
     }
 
+    public function getMethodName(): string
+    {
+        return $this->method->getName();
+    }
+
     public function hasParams(): bool
     {
-        return count($this->params['optional']) !== 0 || count($this->params['required']) !== 0;
+        return $this->paramCount !== 0;
     }
 
     /**

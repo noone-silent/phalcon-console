@@ -129,15 +129,13 @@ class Console
             return [];
         }
 
-        $ref       = new ReflectionClass($loadClass);
-        $namespace = $ref->getNamespaceName();
+        $ref = new ReflectionClass($loadClass);
 
         $clean   = str_replace(
             self::$suffixes,
             '',
             substr(rtrim($file->getFilename(), DIRECTORY_SEPARATOR), 0, -4)
         );
-        $class   = '\\' . $namespace . '\\' . $clean;
         $command = strtolower(str_replace(self::$suffixes, '', $clean));
 
         $commands = [];
@@ -150,7 +148,6 @@ class Console
                 $real       = $attr->newInstance();
                 $commands[] = new Command(
                     "$command:$task",
-                    $class,
                     $method,
                     $params,
                     $real->getDescription()
@@ -161,7 +158,6 @@ class Console
                 }
                 $commands[] = new Command(
                     $real->getAlias(),
-                    $class,
                     $method,
                     $params,
                     $real->getDescription() ?? "Alias of $command:$task"
@@ -250,7 +246,6 @@ class Console
                 $argValue
             );
         }
-        $class = $matched->getClass();
 
         include $this->bootstrapFile;
 
@@ -265,12 +260,17 @@ class Console
         $di = ${$this->containerName};
 
         $arguments           = [];
-        $arguments['task']   = $matched->getClass();
-        $arguments['action'] = str_replace(self::$suffixes, '', $matched->getMethod()->getName());
+        $arguments['task']   = str_replace(self::$suffixes, '', $matched->getClassName());
+        $arguments['action'] = str_replace(self::$suffixes, '', $matched->getMethodName());
         $arguments['params'] = $invokeArgs;
 
-        $cli = new PhalconConsole($di);
-        $cli->handle($arguments);
+        try {
+            $cli = new PhalconConsole($di);
+            $cli->handle($arguments);
+        } catch (Throwable $exc) {
+            echo $exc->getMessage(), PHP_EOL;
+            echo $exc->getTraceAsString(), PHP_EOL;
+        }
     }
 
     private function colored(string $type, string $text): string
