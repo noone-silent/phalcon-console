@@ -9,8 +9,10 @@ use Attribute;
 #[Attribute(Attribute::TARGET_METHOD)]
 readonly class PhalconConsoleCommand
 {
-    public function __construct(private ?string $alias = null, private ?string $description = null)
-    {
+    public function __construct(
+        private ?string $alias = null,
+        private ?string $description = null
+    ) {
     }
 
     public function getAlias(): ?string

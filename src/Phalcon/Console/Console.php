@@ -40,28 +40,33 @@ use const PHP_EOL;
 class Console
 {
     /** @var array<int, string> */
-    private static array $suffixes = ['Command', 'Task', 'Action', 'Controller'];
+    private static array $suffixes = ['Action', 'Command', 'Controller', 'Task'];
 
     /** @var array<int, Location> */
     private array $locations;
 
-    private ?string $bootstrapFile;
+    private string $bootstrapFile;
 
     private ?ColorInterface $color = null;
 
     private int $loadedClasses = 0;
 
+    private string $containerName = 'di';
+
     /**
-     * @param array<int, Location>                                     $locations
-     * @param array{suffixes?: array<int, string>, bootstrap?: string} $options
+     * @param array<int, Location>                                                                 $locations
+     * @param array{bootstrap: string, di?: string, colored?: bool, suffixes?: array<int, string>} $options
      */
-    public function __construct(array $locations, array $options = [])
+    public function __construct(array $locations, array $options)
     {
         if (isset($options['suffixes']) === true && is_array($options['suffixes']) === true) {
             self::$suffixes = [...self::$suffixes, ...$options['suffixes']];
         }
+        if (isset($options['di']) === true && $options['di'] !== '') {
+            $this->containerName = $options['di'];
+        }
 
-        $this->bootstrapFile = $options['bootstrap'] ?? null;
+        $this->bootstrapFile = $options['bootstrap'];
 
         $this->locations = $locations;
     }
@@ -99,40 +104,7 @@ class Console
             exit(0);
         }
 
-        array_shift($args);
-        $requested = array_shift($args);
-
-        foreach ($cmdList as $cmd) {
-            if ($cmd->getCommand() !== $requested) {
-                continue;
-            }
-
-            $invokeArgs = [];
-            foreach ($args as $arg) {
-                $parts                = explode('=', $arg);
-                $argName              = array_shift($parts);
-                $argValue             = implode('=', $parts);
-                $invokeArgs[$argName] = $this->transformValues($cmd->getParamByName($argName), $argValue);
-            }
-            $class = $cmd->getClass();
-
-            /** @var DiInterface|null $di */
-            $di = null;
-            if ($this->bootstrapFile !== null) {
-                include $this->bootstrapFile;
-            }
-            if (isset($di) === false) {
-                throw new RuntimeException('Phalcon Console needs $di defined');
-            }
-
-            $arguments           = [];
-            $arguments['task']   = $cmd->getClass();
-            $arguments['action'] = str_replace(self::$suffixes, '', $cmd->getMethod()->getName());
-            $arguments['params'] = $invokeArgs;
-
-            $cli = new PhalconConsole($di);
-            $cli->handle($arguments);
-        }
+        $this->executeCommand($args, $cmdList);
     }
 
     /**
@@ -242,6 +214,63 @@ class Console
             }
         }
         echo PHP_EOL;
+    }
+
+    /**
+     * @param array<int, string> $args
+     * @param array<Command>     $cmdList
+     *
+     * @return void
+     */
+    private function executeCommand(array $args, array $cmdList): void
+    {
+        array_shift($args);
+        $requested = array_shift($args);
+
+        $matched = null;
+        foreach ($cmdList as $cmd) {
+            if ($cmd->getCommand() === $requested) {
+                $matched = $cmd;
+                break;
+            }
+        }
+
+        if ($matched === null) {
+            echo "Command \"$requested\" not found", PHP_EOL;
+            return;
+        }
+
+        $invokeArgs = [];
+        foreach ($args as $arg) {
+            $parts                = explode('=', $arg);
+            $argName              = array_shift($parts);
+            $argValue             = implode('=', $parts);
+            $invokeArgs[$argName] = $this->transformValues(
+                $matched->getParamByName($argName),
+                $argValue
+            );
+        }
+        $class = $matched->getClass();
+
+        include $this->bootstrapFile;
+
+        if (
+            isset(${$this->containerName}) === false ||
+            ${$this->containerName} instanceof DiInterface === false
+        ) {
+            throw new RuntimeException('Phalcon Console needs $di to be defined!');
+        }
+
+        /** @var DiInterface $di */
+        $di = ${$this->containerName};
+
+        $arguments           = [];
+        $arguments['task']   = $matched->getClass();
+        $arguments['action'] = str_replace(self::$suffixes, '', $matched->getMethod()->getName());
+        $arguments['params'] = $invokeArgs;
+
+        $cli = new PhalconConsole($di);
+        $cli->handle($arguments);
     }
 
     private function colored(string $type, string $text): string

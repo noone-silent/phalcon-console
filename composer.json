@@ -36,9 +36,7 @@
   },
   "extra": {
     "phalcon-console": {
-      "options": {
-        "bootstrap": "tests/test-bootstrap.php"
-      },
+      "bootstrap": "tests/test-bootstrap.php",
       "locations": [
         "tests/"
       ]

@@ -5,9 +5,9 @@ use Phalcon\Console\Color;
 use Phalcon\Console\Console;
 use Phalcon\Console\Location;
 
-// We expect to be in vendor/bin
 $baseDir = dirname(__DIR__);
 if (str_ends_with($baseDir, 'phalcon-console') === true) {
+    // We expect to be in vendor/noone-silent/phalcon-console
     $baseDir = dirname($baseDir, 3);
 }
 
@@ -15,7 +15,7 @@ require_once $baseDir . '/vendor/autoload.php';
 
 $composerJson = file_get_contents($baseDir . '/composer.json');
 if ($composerJson === false) {
-    echo 'Could not parse composer.json', \PHP_EOL;
+    echo 'Could not parse composer.json', PHP_EOL;
     exit(1);
 }
 try {
@@ -32,12 +32,11 @@ foreach ($settings['locations'] ?? [] as $location) {
     $locations[] = new Location($baseDir . DIRECTORY_SEPARATOR . $location);
 }
 
-$options = $settings['options'] ?? [];
-if (isset($options['bootstrap']) === true) {
-    $options['bootstrap'] = $baseDir . DIRECTORY_SEPARATOR . $options['bootstrap'];
+if (isset($settings['bootstrap']) === true) {
+    $settings['bootstrap'] = $baseDir . DIRECTORY_SEPARATOR . $settings['bootstrap'];
 }
 
-$console = new Console($locations, $options);
+$console = new Console($locations, $settings);
 if (($settings['colored'] ?? true) === true) {
     $console->setColor(new Color());
 }

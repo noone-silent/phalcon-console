@@ -26,12 +26,14 @@ composer require noone-silent/phalcon-console
 # Configuration
 
 For the discovery of Commands, add a list of all folders that you wish to scan for PHP-Classes. Modify your project
-composer.json and add the following configuration, adjusted to your needs.
+composer.json and add the following configuration, adjusted to your needs. The bootstrap file is needed. There you
+instantiate the `$di` container used for the `\Phalcon\Cli\Console` class.
 
 ```json
 {
   "extras": {
     "phalcon-console": {
+      "bootstrap": "path/to/your/cli/bootstrap.php",
       "locations": [
         ".",
         "src/",
@@ -48,6 +50,8 @@ Now add the `#[PhalconConsoleCommand]` attribute to any method you want to be us
 ```php
 // Before
 
+use Phalcon\Cli\Task;
+
 class MyCliTask extends Task
 {
     public function mainAction(string $date): void
@@ -63,6 +67,7 @@ class MyCliTask extends Task
 
 // After
 
+use Phalcon\Cli\Task;
 use Phalcon\Console\PhalconConsoleCommand;
 
 class MyCliTask extends Task
@@ -114,24 +119,29 @@ There are a few other options you can use. Below is the list with their default 
 {
   "extras": {
     "phalcon-console": {
-      "colored": true,
       "locations": [],
-      "options": {
-        "suffixes": [
-          "Command",
-          "Task",
-          "Action",
-          "Controller"
-        ]
-      }
+      "bootstrap": "",
+      "di": "di",
+      "colored": true,
+      "suffixes": [
+        "Action",
+        "Command",
+        "Controller",
+        "Task"
+      ]
     }
   }
 }
 ```
 
-The option **colored** is used to enable or disable colored output.
-
 With the **locations** option, you define which folders need to be scanned. It uses the project root as a starting point.
+
+The **bootstrap** option is needed, so you can set up your Phalcon application with all services that you need.
+
+If you have named your DI different then `$di`, then you can set the name in the **di** option. Omit the dollar sign. 
+If you named it `$container` then put `container` into the `di` setting.
+
+The option **colored** is used to enable or disable colored output.
 
 If your command has a suffix that you want to remove, you can add it to the **suffixes** option.
 
@@ -161,3 +171,8 @@ bin/phalcon-console
 # execute a single command with some arguments
 bin/phalcon-console dummy:say name=Phalcon
 ```
+
+# Roadmap
+
+- Caching (if needed)
+- Phalcon Module Support
