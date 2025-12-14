@@ -266,6 +266,7 @@ class Console
 
         try {
             $cli = new PhalconConsole($di);
+            $cli->dispatcher->setDefaultNamespace($matched->getNamespaceName());
             $cli->handle($arguments);
         } catch (Throwable $exc) {
             echo $exc->getMessage(), PHP_EOL;

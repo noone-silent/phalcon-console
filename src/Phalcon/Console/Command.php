@@ -62,12 +62,17 @@ final class Command
 
     public function getClass(): ReflectionClass
     {
-        return $this->getMethod()->getDeclaringClass();
+        return $this->method->getDeclaringClass();
     }
 
     public function getClassName(): string
     {
         return $this->method->getDeclaringClass()->getShortName();
+    }
+
+    public function getNamespaceName(): string
+    {
+        return $this->method->getDeclaringClass()->getNamespaceName();
     }
 
     public function getMethod(): ReflectionMethod
