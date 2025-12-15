@@ -1,5 +1,6 @@
 services:
   phalcon:
+    hostname: phalcon-console
     build:
       dockerfile: Dockerfile
       context: .

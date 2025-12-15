@@ -99,6 +99,10 @@ mycli:
   mycli:dosomething <a:int> [b:int=2]
 ```
 
+Here is an example image with a few commands:
+
+![example output](assets/example-output.jpg)
+
 Parameters that are required are wrapped in `<` and `>`. Optional parameters are wrapped in `[` and `]`.
 
 Now you can execute a command:
